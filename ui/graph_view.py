@@ -3,6 +3,7 @@ from PyQt5 import QtGui
 from PyQt5.QtWidgets import QGraphicsView
 from PyQt5.QtCore import Qt
 from graph_items.node_item import NodeItem
+from graph_items.edge_item import EdgeItem
 
 class GraphView(QGraphicsView):
     def __init__(self, scene):
@@ -22,8 +23,21 @@ class GraphView(QGraphicsView):
 
         if event.button() == Qt.LeftButton:
             if self.mode == "node_place":
-                new_node = NodeItem(scene_pos)
+                new_node = NodeItem(scene_pos) 
                 self.scene().addItem(new_node)
                 
             elif self.mode == "edge_start":
                 item = self.scene().itemAt(scene_pos, self.transform())
+
+                # Check to make sure they clicked on a node
+                if isinstance(item, NodeItem):
+                    if self.edge_start_node == None:
+                        self.edge_start_node = item
+                    else:
+                        new_edge = EdgeItem(self.edge_start_node, item)
+                        self.scene().addItem(new_edge)
+                        self.edge_start_node = None
+                else:
+                    # Reset mouse mode if they don't click on a node
+                    self.set_mode("none")
+        super().mousePressEvent(event)
